@@ -33,7 +33,7 @@ Why not hold the prompt inside the hook and call `next({ ...e, text })`? A hook 
 
 ## What is proven, and how
 
-**Statically, by `claude plugin validate .`** The validator reads the module the way the engine loads it and lists every engine call it makes. For 0.1.0: `$.clock.after`, `$.prompt.submit`, `$.session.surfaces`, `$.state.get`, `$.state.set`, `$.ui.close`, `$.ui.focus`, `$.ui.log`, `$.ui.open`, `$.ui.panes`, `$.ui.resolve`, `$.ui.status`, `$.ui.toast`. There is no `$.http`, `$.model`, `$.fs`, `$.store`, `$.process`, `$.mcp`, `$.agent` or telemetry call, and a hooks module has no other way out: it runs with no Node, no DOM and no network of its own.
+**Statically, by `claude plugin validate .`** The validator reads the module the way the engine loads it and lists every engine call it makes. For 0.1.1: `$.clock.after`, `$.prompt.submit`, `$.session.surfaces`, `$.state.get`, `$.state.set`, `$.ui.close`, `$.ui.focus`, `$.ui.log`, `$.ui.open`, `$.ui.panes`, `$.ui.resolve`, `$.ui.status`, `$.ui.toast`. There is no `$.http`, `$.model`, `$.fs`, `$.store`, `$.process`, `$.mcp`, `$.agent` or telemetry call, and a hooks module has no other way out: it runs with no Node, no DOM and no network of its own.
 
 **By unit tests** (`tests/replacement-engine.test.ts`, `tests/privacy-controller.test.ts`):
 

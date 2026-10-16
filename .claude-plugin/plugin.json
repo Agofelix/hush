@@ -1,6 +1,6 @@
 {
   "name": "hush",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Review and anonymize each prompt locally before Claude receives it.",
   "author": { "name": "Agofelix", "url": "https://github.com/Agofelix" },
   "homepage": "https://github.com/Agofelix/hush",

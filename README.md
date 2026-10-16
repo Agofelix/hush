@@ -138,7 +138,26 @@ claude plugin marketplace update hush
 claude plugin update hush@hush
 ```
 
-Then restart open sessions, or run `/reload-plugins` in them.
+Then restart open sessions, or run `/reload-plugins` in them. Every release raises `version` in `.claude-plugin/plugin.json`, which is how `claude plugin update` tells that a new one is out.
+
+### Automatic updates
+
+Claude Code turns automatic updates on only for Anthropic's official marketplace: for `hush` they stay off until you turn them on. In a session, run `/plugin`, go to the marketplaces, select `hush` and choose **Enable auto-update**. Claude Code then refreshes the marketplace and Hush by itself, and a new version takes effect from the next session.
+
+A team can register the marketplace with automatic updates in a project's `.claude/settings.json`:
+
+```json
+{
+  "extraKnownMarketplaces": {
+    "hush": {
+      "source": { "source": "github", "repo": "Agofelix/hush" },
+      "autoUpdate": true
+    }
+  }
+}
+```
+
+**Think before turning it on.** Hush reads every prompt you type before Claude does. With automatic updates, each future version runs on your machine before you have seen what changed. For a privacy tool the safer habit is to update by hand, after reading the changes in the repository's history.
 
 ## Uninstall
 
@@ -241,6 +260,8 @@ claude plugin test .
 ```bash
 tsc -p .
 ```
+
+For every release, raise `version` in `.claude-plugin/plugin.json` and `package.json`: without a new version, `claude plugin update` may not offer the release to people who installed Hush.
 
 `tsc` needs TypeScript 5.4 or later and the API types in `.claude-plugin/types/`, which Claude Code writes the first time it loads the mod from this folder (for instance through `--plugin-dir` in an interactive session). The package declares no dependencies.
 
