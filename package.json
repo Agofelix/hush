@@ -1,0 +1,13 @@
+{
+  "name": "hush",
+  "version": "0.1.0",
+  "description": "Review and anonymize each prompt locally before Claude receives it. A Claude Code mod.",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "validate": "claude plugin validate .",
+    "test": "claude plugin test .",
+    "typecheck": "tsc -p ."
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "name": "hush",
+  "owner": { "name": "Agofelix" },
+  "description": "Hush, a Claude Code mod that anonymizes prompts locally before they are sent.",
+  "plugins": [
+    {
+      "name": "hush",
+      "source": "./",
+      "description": "Review and anonymize each prompt locally before Claude receives it."
+    }
+  ]
+}

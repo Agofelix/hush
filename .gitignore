@@ -1,0 +1,8 @@
+# Written by Claude Code each time it loads the mod from this folder.
+.claude-plugin/types/
+
+# Local editor and tool copies; never part of the mod.
+backup/
+node_modules/
+.DS_Store
+*.log

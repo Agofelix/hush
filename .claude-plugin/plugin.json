@@ -1,0 +1,31 @@
+{
+  "name": "hush",
+  "version": "0.1.0",
+  "description": "Review and anonymize each prompt locally before Claude receives it.",
+  "author": { "name": "Agofelix", "url": "https://github.com/Agofelix" },
+  "homepage": "https://github.com/Agofelix/hush",
+  "repository": "https://github.com/Agofelix/hush",
+  "license": "MIT",
+  "types": "./types/index.d.ts",
+  "userConfig": {
+    "allowUnmodifiedSubmission": {
+      "type": "boolean",
+      "title": "Allow sending the original prompt",
+      "description": "Adds a 'Send original prompt' action to the review panel. It always asks a second time. Off by default.",
+      "default": false
+    },
+    "ruleScope": {
+      "type": "string",
+      "title": "Rule lifetime",
+      "description": "session: rules stay in memory until the session ends. prompt: rules are forgotten after each prompt.",
+      "options": ["session", "prompt"],
+      "default": "session"
+    },
+    "reviewTimeoutMinutes": {
+      "type": "number",
+      "title": "Review timeout in minutes",
+      "description": "A held prompt is discarded after this many minutes without a decision.",
+      "default": 10
+    }
+  }
+}
