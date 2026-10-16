@@ -29,7 +29,7 @@ const SYNTAX_CHARS = /[\\^$.*+?()[\]{}|/]/g
  * is never matched again by another rule.
  *
  * Overlaps are settled leftmost first, then longest first, then by rule
- * order: "Mercedes Spa" wins over "Mercedes" where both start together.
+ * order: "Mario Rossi" wins over "Rossi" where both start together.
  */
 export function anonymize(original: string, rules: readonly Rule[]): Anonymized {
   const applied = rules.filter(rule => rule.isEnabled && rule.keyword.trim() !== '')

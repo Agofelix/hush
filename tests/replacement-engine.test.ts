@@ -21,11 +21,11 @@ function rule(keyword: string, replacement: string, overrides: Partial<Rule> = {
 }
 
 const PEC =
-  "Dovrai scrivere una pec da parte della nostra società per l'amministratore delegato di Mercedes Spa, scrivendo che la nostra ultima Mercedes acquistata non rispetta i requisiti del contratto, pertanto si chiede di intervenire"
+  "Dovrai scrivere una pec da parte della nostra società per l'amministratore delegato di Acme Spa, scrivendo che la nostra ultima Acme acquistata non rispetta i requisiti del contratto, pertanto si chiede di intervenire"
 
 describe('replacement engine', () => {
   test('replaces a single keyword everywhere, as in the PEC example', () => {
-    const result = anonymize(PEC, [rule('Mercedes', '[Cliente]')])
+    const result = anonymize(PEC, [rule('Acme', '[Cliente]')])
 
     expect(result.text).toBe(
       "Dovrai scrivere una pec da parte della nostra società per l'amministratore delegato di [Cliente] Spa, scrivendo che la nostra ultima [Cliente] acquistata non rispetta i requisiti del contratto, pertanto si chiede di intervenire",
@@ -53,25 +53,25 @@ describe('replacement engine', () => {
   })
 
   test('matches without regard to case by default', () => {
-    const result = anonymize('mercedes, MERCEDES, MeRcEdEs', [rule('Mercedes', 'X')])
+    const result = anonymize('acme, ACME, AcMe', [rule('Acme', 'X')])
 
     expect(result.text).toBe('X, X, X')
   })
 
   test('matches only the exact case when the rule asks for it', () => {
-    const result = anonymize('Mercedes, mercedes', [rule('Mercedes', 'X', { isCaseSensitive: true })])
+    const result = anonymize('Acme, acme', [rule('Acme', 'X', { isCaseSensitive: true })])
 
-    expect(result.text).toBe('X, mercedes')
+    expect(result.text).toBe('X, acme')
   })
 
   test('matches whole words by default and inside words when asked', () => {
-    const text = 'Mercedes-Benz, Mercedesland, AMercedes, Mercedes_x'
+    const text = 'Acme-Corp, Acmeland, AAcme, Acme_x'
 
-    expect(anonymize(text, [rule('Mercedes', 'X')]).text).toBe(
-      'X-Benz, Mercedesland, AMercedes, Mercedes_x',
+    expect(anonymize(text, [rule('Acme', 'X')]).text).toBe(
+      'X-Corp, Acmeland, AAcme, Acme_x',
     )
-    expect(anonymize(text, [rule('Mercedes', 'X', { isWholeWord: false })]).text).toBe(
-      'X-Benz, Xland, AX, X_x',
+    expect(anonymize(text, [rule('Acme', 'X', { isWholeWord: false })]).text).toBe(
+      'X-Corp, Xland, AX, X_x',
     )
   })
 
@@ -110,9 +110,9 @@ describe('replacement engine', () => {
   })
 
   test('settles overlapping rules longest first, whatever their order', () => {
-    const text = 'Mercedes Spa ha venduto una Mercedes.'
-    const company = rule('Mercedes Spa', '[Azienda]')
-    const brand = rule('Mercedes', '[Marchio]')
+    const text = 'Acme Spa ha venduto una Acme.'
+    const company = rule('Acme Spa', '[Azienda]')
+    const brand = rule('Acme', '[Marchio]')
 
     expect(anonymize(text, [company, brand]).text).toBe('[Azienda] ha venduto una [Marchio].')
     expect(anonymize(text, [brand, company]).text).toBe('[Azienda] ha venduto una [Marchio].')
@@ -134,11 +134,11 @@ describe('replacement engine', () => {
   })
 
   test('replaces once when two rules are duplicates', () => {
-    const first = rule('Mercedes', '[Cliente]')
-    const copy = rule('Mercedes', '[Cliente]')
+    const first = rule('Acme', '[Cliente]')
+    const copy = rule('Acme', '[Cliente]')
     const check = checkRules([first, copy])
 
-    expect(anonymize('Mercedes e Mercedes', check.applied).text).toBe('[Cliente] e [Cliente]')
+    expect(anonymize('Acme e Acme', check.applied).text).toBe('[Cliente] e [Cliente]')
     expect(check.issues).toEqual([
       { ruleId: copy.id, kind: 'duplicate', isBlocking: false, otherRuleId: first.id },
     ])
@@ -146,55 +146,55 @@ describe('replacement engine', () => {
   })
 
   test('keeps the first of two conflicting mappings and reports the second', () => {
-    const first = rule('Mercedes', '[Cliente]')
-    const second = rule('MERCEDES', '[Marchio]')
+    const first = rule('Acme', '[Cliente]')
+    const second = rule('ACME', '[Marchio]')
     const check = checkRules([first, second])
 
-    expect(anonymize('una Mercedes', check.applied).text).toBe('una [Cliente]')
+    expect(anonymize('una Acme', check.applied).text).toBe('una [Cliente]')
     expect(check.issues[0]?.kind).toBe('conflict')
     expect(check.issues[0]?.otherRuleId).toBe(first.id)
   })
 
   test('ignores empty and disabled rules and blocks incomplete ones', () => {
-    const text = 'Mercedes'
+    const text = 'Acme'
 
-    expect(anonymize(text, [rule('', 'X'), rule('   ', 'Y')]).text).toBe('Mercedes')
-    expect(anonymize(text, [rule('Mercedes', 'X', { isEnabled: false })]).text).toBe('Mercedes')
+    expect(anonymize(text, [rule('', 'X'), rule('   ', 'Y')]).text).toBe('Acme')
+    expect(anonymize(text, [rule('Acme', 'X', { isEnabled: false })]).text).toBe('Acme')
 
     const noKeyword = rule('', '[X]')
-    const noReplacement = rule('Mercedes', '')
+    const noReplacement = rule('Acme', '')
     const blank = rule('', '')
     const check = checkRules([noKeyword, noReplacement, blank])
 
     expect(check.applied).toHaveLength(0)
     expect(check.isBlocked).toBe(true)
     expect(check.issues.map(issue => issue.kind)).toEqual(['missing-keyword', 'missing-replacement'])
-    expect(checkRules([blank, rule('Mercedes', '', { isEnabled: false })]).isBlocked).toBe(false)
+    expect(checkRules([blank, rule('Acme', '', { isEnabled: false })]).isBlocked).toBe(false)
   })
 
   test('trims the keyword the person typed', () => {
-    const check = checkRules([rule('  Mercedes  ', '[C]')])
+    const check = checkRules([rule('  Acme  ', '[C]')])
 
-    expect(check.applied[0]?.keyword).toBe('Mercedes')
-    expect(anonymize('la Mercedes nuova', check.applied).text).toBe('la [C] nuova')
+    expect(check.applied[0]?.keyword).toBe('Acme')
+    expect(anonymize('la Acme nuova', check.applied).text).toBe('la [C] nuova')
   })
 
   test('warns when the replacement still shows the keyword', () => {
-    const check = checkRules([rule('Mercedes', '[mercedes]')])
+    const check = checkRules([rule('Acme', '[acme]')])
 
     expect(check.issues[0]?.kind).toBe('replacement-reveals-keyword')
     expect(check.isBlocked).toBe(false)
   })
 
   test('keeps every space, tab and punctuation mark outside the matches', () => {
-    const text = '  Mercedes\t,  (Mercedes)!  \t'
+    const text = '  Acme\t,  (Acme)!  \t'
 
-    expect(anonymize(text, [rule('Mercedes', 'X')]).text).toBe('  X\t,  (X)!  \t')
+    expect(anonymize(text, [rule('Acme', 'X')]).text).toBe('  X\t,  (X)!  \t')
   })
 
   test('keeps line breaks and lets a phrase match across one', () => {
-    const text = 'Gentile Mario\nRossi,\r\nla Mercedes\r\nè pronta.\n'
-    const result = anonymize(text, [rule('Mario Rossi', '[Persona]'), rule('Mercedes', '[Cliente]')])
+    const text = 'Gentile Mario\nRossi,\r\nla Acme\r\nè pronta.\n'
+    const result = anonymize(text, [rule('Mario Rossi', '[Persona]'), rule('Acme', '[Cliente]')])
 
     expect(result.text).toBe('Gentile [Persona],\r\nla [Cliente]\r\nè pronta.\n')
     expect(anonymize('Mario Rossi', [rule('Mario Rossi', '[P]')]).text).toBe('[P]')
@@ -211,25 +211,25 @@ describe('replacement engine', () => {
   })
 
   test('never runs a replacement through another rule', () => {
-    const result = anonymize('Mercedes', [rule('Mercedes', '[Cliente]'), rule('Cliente', '[Persona]')])
+    const result = anonymize('Acme', [rule('Acme', '[Cliente]'), rule('Cliente', '[Persona]')])
 
     expect(result.text).toBe('[Cliente]')
   })
 
   test('treats a placeholder already in the prompt as ordinary text', () => {
-    expect(anonymize('[Cliente] e Mercedes', [rule('Mercedes', '[Cliente]')]).text).toBe(
+    expect(anonymize('[Cliente] e Acme', [rule('Acme', '[Cliente]')]).text).toBe(
       '[Cliente] e [Cliente]',
     )
-    expect(anonymize('[Cliente] e Mercedes', [rule('Cliente', '[Persona]')]).text).toBe(
-      '[[Persona]] e Mercedes',
+    expect(anonymize('[Cliente] e Acme', [rule('Cliente', '[Persona]')]).text).toBe(
+      '[[Persona]] e Acme',
     )
   })
 
   test('handles a very long prompt', () => {
-    const block = 'Il cliente Mercedes Spa ha scritto a Mario Rossi.\n'
+    const block = 'Il cliente Acme Spa ha scritto a Mario Rossi.\n'
     const text = block.repeat(20_000)
     const started = Date.now()
-    const result = anonymize(text, [rule('Mercedes Spa', '[Azienda]'), rule('Mario Rossi', '[Persona]')])
+    const result = anonymize(text, [rule('Acme Spa', '[Azienda]'), rule('Mario Rossi', '[Persona]')])
 
     expect(result.replacementCount).toBe(40_000)
     expect(result.text).toBe('Il cliente [Azienda] ha scritto a [Persona].\n'.repeat(20_000))
@@ -237,7 +237,7 @@ describe('replacement engine', () => {
   })
 
   test('the text is always the exact concatenation of the preview segments', () => {
-    const result = anonymize(PEC, [rule('Mercedes Spa', '[A]'), rule('contratto', '[C]')])
+    const result = anonymize(PEC, [rule('Acme Spa', '[A]'), rule('contratto', '[C]')])
 
     expect(result.text).toBe(result.segments.map(segment => segment.text).join(''))
     expect(result.segments.filter(segment => segment.ruleId !== undefined)).toHaveLength(2)

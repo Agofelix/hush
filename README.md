@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/hush-logo.svg" width="312" alt="Hush logo: a pixel crab wearing a hacker mask">
+</p>
+
 # Hush
 
 **Your words. Your secrets.**
@@ -6,49 +10,135 @@ Hush is a Claude Code mod. When you press Enter, it holds the prompt and opens a
 
 The replacement runs inside the mod, on your machine. Hush makes no network request, calls no model, has no file access and keeps prompts and rules in memory only; its few log lines carry counts, never text. `claude plugin validate .` lists every engine call the mod makes, and [SECURITY.md](SECURITY.md) explains what that list proves.
 
+## Example
+
+You type:
+
+> Scrivi una mail a Mario Rossi per confermare la riunione di giovedì alle 10. Chiedi a Mario Rossi di portare il contratto firmato.
+
+You add one rule, `Mario Rossi` replaced by `[Referente]`. The preview reads, and Claude receives:
+
+> Scrivi una mail a [Referente] per confermare la riunione di giovedì alle 10. Chiedi a [Referente] di portare il contratto firmato.
+
 Both occurrences are replaced. Everything outside the matches (punctuation, case, line breaks) stays byte for byte as typed.
 
 ## Install
 
-Hush was built and tested on Claude Code 2.1.299. The Mod API is early access: another version may refuse the module or behave differently, so run `claude plugin validate .` and `claude plugin test .` from this folder after each update.
+Hush is a mod: a plugin of function hooks that installs through Claude Code's own plugin system. The repository is public, so no GitHub account is needed and nothing is downloaded by hand.
 
-**Install from GitHub**, at the prompt of a terminal session:
+**Versions.** Hush passes `claude plugin validate` and `claude plugin test` on Claude Code 2.1.286, 2.1.299 and 2.1.301. The Mod API is early access, so a much older or newer build may refuse the module. To see which build you run:
+
+```bash
+claude --version
+```
+
+### In a Claude Code session, at the terminal
+
+On builds that know `--marketplace` (2.1.299 and 2.1.301 do):
 
 ```
 /plugin install hush --marketplace Agofelix/hush
 ```
 
-Answer `y` to add the marketplace, then pick a scope (user is the first). Hush is active at once, with no restart.
+Claude Code asks whether to add the marketplace `github:Agofelix/hush`: answer `y`, then pick a scope. Hush is active at once, with no restart.
 
-From a shell:
+On older builds (2.1.286 does not know `--marketplace`), in two steps:
+
+```
+/plugin marketplace add Agofelix/hush
+```
+
+```
+/plugin install hush@hush
+```
+
+### From a shell
+
+On newer builds:
 
 ```bash
 claude plugin install hush --marketplace Agofelix/hush
 ```
 
-In the desktop app, where `/plugin` does not run: click + next to the prompt box, then Plugins, Add marketplace with `Agofelix/hush`, then Add plugin.
-
-**Try it for one session** (nothing is installed):
+On older builds, or when the line above answers `error: unknown option '--marketplace'`:
 
 ```bash
-git clone https://github.com/Agofelix/hush
-```
-
-```bash
-claude --plugin-dir hush
-```
-
-**Install from a local folder:**
-
-```bash
-claude plugin marketplace add /path/to/hush
+claude plugin marketplace add Agofelix/hush
 ```
 
 ```bash
 claude plugin install hush@hush
 ```
 
-In the desktop app, click + next to the prompt box, then Plugins, Add marketplace with the folder's path, then Add plugin.
+Both forms install for your user. Add `--scope` to choose another place:
+
+| Scope | Where Hush runs | Flag |
+| --- | --- | --- |
+| user | every session of yours, in every folder | `--scope user` (the default) |
+| project | this project, for everyone who uses its `.claude/settings.json` | `--scope project` |
+| local | this project, for you only | `--scope local` |
+
+If you also use the VS Code extension or `claude -p`, prefer project or local: there Hush has no panel to show and holds back every prompt.
+
+### In the desktop app
+
+`/plugin` does not run there. Click + next to the prompt box, then Plugins, Add marketplace with `Agofelix/hush`, then Add plugin.
+
+### From a local copy
+
+Useful without GitHub access at install time, or to try your own changes:
+
+```bash
+git clone https://github.com/Agofelix/hush
+```
+
+```bash
+claude plugin marketplace add "$PWD/hush"
+```
+
+```bash
+claude plugin install hush@hush
+```
+
+Claude Code reads a folder marketplace from the folder itself: after an edit there, run `/reload-plugins` in an open session.
+
+### For one session only
+
+Nothing is installed; the mod loads from the folder until you quit:
+
+```bash
+claude --plugin-dir hush
+```
+
+### Check that it works
+
+```bash
+claude plugin list
+```
+
+`hush@hush` should be listed and enabled. Then send any prompt: the Hush panel opens and the prompt waits for your decision.
+
+### More than one Claude Code on the same machine
+
+An npm install (often under nvm) and the native installer (`~/.local/bin/claude`) can live side by side, and the shell runs whichever comes first in `PATH`. When a command or option seems missing, list them:
+
+```bash
+which -a claude
+```
+
+Run the newest by its full path, or put its folder first in `PATH`.
+
+## Update
+
+```bash
+claude plugin marketplace update hush
+```
+
+```bash
+claude plugin update hush@hush
+```
+
+Then restart open sessions, or run `/reload-plugins` in them.
 
 ## Uninstall
 
@@ -60,7 +150,17 @@ claude plugin uninstall hush@hush
 claude plugin marketplace remove hush
 ```
 
-The marketplace keeps its name, `hush`, whether you added it from GitHub or from a folder.
+The marketplace keeps its name, `hush`, whether you added it from GitHub or from a folder. If you installed with `--scope project` or `--scope local`, pass the same `--scope` to `update` and `uninstall`.
+
+## Troubleshooting
+
+| What you see | Why | What to do |
+| --- | --- | --- |
+| `error: unknown option '--marketplace'` | Your Claude Code predates that option | Use the two-step form |
+| `Plugin "hush" not found in marketplace` | The marketplace was added under another name | `claude plugin marketplace list`, then install `hush@` followed by that name |
+| `Marketplace file not found at` | The source is not this repository | Check the spelling of `Agofelix/hush` |
+| Every prompt ends with "Hush needs the terminal or the desktop app" | VS Code extension or `claude -p`: no panel there | Reinstall with `--scope project` or `--scope local`, or uninstall |
+| Prompts go straight to Claude, no panel | Hush is not enabled where you are | `claude plugin list`; if needed `claude plugin enable hush@hush`, then restart the session |
 
 ## Using the panel
 
@@ -92,7 +192,7 @@ Enter never sends the prompt from a text field. Matched segments are highlighted
 * A space inside a keyword matches any run of whitespace, so `Mario Rossi` also matches a name split across two lines.
 * Accented and non-Latin letters count as letters; composed and decomposed accents both match.
 * One pass over the original: a replacement is never matched again by another rule.
-* Overlaps go to the leftmost match, then the longest: with `Mercedes Spa` and `Mercedes` both defined, `Mercedes Spa` wins where both start.
+* Overlaps go to the leftmost match, then the longest: with `Mario Rossi` and `Rossi` both defined, `Mario Rossi` wins where both start.
 * Two rules with the same keyword: the first wins and the panel marks the second.
 
 ## Configuration
@@ -158,13 +258,13 @@ Layout:
 
 1. Start an interactive terminal session at 110 columns or more: `claude --plugin-dir /path/to/hush`.
 2. Type the example prompt above and press Enter. Expect the line "Hush is holding this prompt for review" and the panel.
-3. Add `Mercedes` replaced by `[Cliente]`. Expect "2 replacements from 1 rule" and both occurrences highlighted.
-4. Press Confirm and send. Expect "Hush: sent the anonymized prompt (2 replacements)" and a prompt row containing `[Cliente]`.
+3. Add `Mario Rossi` replaced by `[Referente]`. Expect "2 replacements from 1 rule" and both occurrences highlighted.
+4. Press Confirm and send. Expect "Hush: sent the anonymized prompt (2 replacements)" and a prompt row containing `[Referente]`.
 5. Send another prompt, press Esc. Expect "Hush discarded the prompt. Nothing was sent."
 6. Look for the keyword in the session's transcript. Expect no match:
 
 ```bash
-grep -c Mercedes ~/.claude/projects/*/<session-id>.jsonl
+grep -c "Mario Rossi" ~/.claude/projects/*/<session-id>.jsonl
 ```
 
 ## Known limitations
